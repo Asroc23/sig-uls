@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dark Mode Transitions */
+:root {
+    color-scheme: light dark;
+}
+
+html {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Smooth color transitions for dark mode */
+* {
+    @apply transition-colors duration-300;
+}
+
+/* Prevent transition on load */
+html.no-transition,
+html.no-transition *,
+html.no-transition *:before,
+html.no-transition *:after {
+    transition: none !important;
+}
