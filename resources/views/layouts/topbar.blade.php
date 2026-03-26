@@ -18,7 +18,7 @@
             </svg>
         </button>
 
-        <!-- Language Switcher -->
+        <!-- Language Switcher 
         <div x-data="{ open: false }" class="relative">
             <button @click="open = !open" class="flex items-center space-x-1 p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -27,7 +27,6 @@
                 <span class="text-sm font-medium uppercase">{{ app()->getLocale() }}</span>
             </button>
 
-            <!-- Dropdown Menu -->
             <div x-show="open" @click.outside="open = false" x-transition
                  class="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-700 rounded-lg shadow-lg py-2 z-50">
                 <form method="POST" action="{{ route('language.switch', ['locale' => 'en']) }}" class="w-full">
@@ -45,7 +44,7 @@
                     </button>
                 </form>
             </div>
-        </div>
+        </div> -->
 
         <!-- User Dropdown -->
         <div x-data="{ open: false }" class="relative">

@@ -12,24 +12,8 @@
 @section('content')
     <!-- Filters Section -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
-        <div class="flex items-center justify-between mb-4">
+        <div class="mb-4">
             <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Filtros</h2>
-            <div class="flex gap-2">
-                <form id="pdfForm" method="GET" action="{{ route('reports.download-pdf') }}" style="display:inline;">
-                    <button type="button" onclick="submitPdfForm()" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
-                        Descargar PDF
-                    </button>
-                </form>
-                <a href="#" onclick="goToEmailWithFilters(event)" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    Enviar Email
-                </a>
-            </div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <!-- Graduation Year Filter -->
@@ -328,31 +312,6 @@
         // Check if dark mode is enabled
         function isDarkMode() {
             return document.documentElement.classList.contains('dark');
-        }
-
-        // Submit PDF form with current filters
-        function submitPdfForm() {
-            const form = document.getElementById('pdfForm');
-            const filters = getFilterValues();
-            
-            // Add filter parameters to form
-            for (const [key, value] of Object.entries(filters)) {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = key;
-                input.value = value;
-                form.appendChild(input);
-            }
-            
-            form.submit();
-        }
-
-        // Navigate to email form with current filters
-        function goToEmailWithFilters(event) {
-            event.preventDefault();
-            const filters = getFilterValues();
-            const params = new URLSearchParams(filters).toString();
-            window.location.href = '{{ route("reports.email-form") }}?' + params;
         }
 
         // Event listeners for filters

@@ -23,6 +23,7 @@ class StoreGraduateRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'carnet' => ['required', 'string', 'max:50', 'unique:graduates,carnet'],
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:graduates,email'],
@@ -42,6 +43,9 @@ class StoreGraduateRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'carnet.required' => 'El carnet es requerido.',
+            'carnet.unique' => 'Este carnet ya está registrado.',
+            'carnet.max' => 'El carnet no puede exceder 50 caracteres.',
             'first_name.required' => 'El nombre es requerido.',
             'last_name.required' => 'El apellido es requerido.',
             'email.required' => 'El email es requerido.',

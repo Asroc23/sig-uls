@@ -17,6 +17,7 @@ it('creates graduate with photo upload', function () {
     $response = $this
         ->actingAs($user)
         ->post(route('graduates.store'), [
+            'carnet' => 'G123456',
             'first_name' => 'Juan',
             'last_name' => 'Pérez',
             'email' => 'juan@example.com',
@@ -45,6 +46,7 @@ it('stores graduate photo path correctly in database', function () {
     $this
         ->actingAs($user)
         ->post(route('graduates.store'), [
+            'carnet' => 'G234567',
             'first_name' => 'María',
             'last_name' => 'González',
             'email' => 'maria@example.com',
@@ -91,6 +93,7 @@ it('updates graduate photo with new image', function () {
     $response = $this
         ->actingAs($user)
         ->put(route('graduates.update', $graduate), [
+            'carnet' => $graduate->carnet,
             'first_name' => $graduate->first_name,
             'last_name' => $graduate->last_name,
             'email' => $graduate->email,
@@ -134,6 +137,7 @@ it('creates graduate without photo', function () {
     $response = $this
         ->actingAs($user)
         ->post(route('graduates.store'), [
+            'carnet' => 'G345678',
             'first_name' => 'Sin',
             'last_name' => 'Foto',
             'email' => 'nophoto@example.com',
@@ -161,6 +165,7 @@ it('updates graduate without requiring photo', function () {
     $response = $this
         ->actingAs($user)
         ->put(route('graduates.update', $graduate), [
+            'carnet' => $graduate->carnet,
             'first_name' => 'Updated',
             'last_name' => $graduate->last_name,
             'email' => 'updated@example.com',

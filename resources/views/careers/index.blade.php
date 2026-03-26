@@ -18,12 +18,6 @@
 @endsection
 
 @section('content')
-    @if (session('success'))
-        <div class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-            <p class="text-green-700 dark:text-green-400">{{ session('success') }}</p>
-        </div>
-    @endif
-
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -59,7 +53,7 @@
                                 <a href="{{ route('careers.edit', $career) }}" class="inline-flex items-center px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-md hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors">
                                     Editar
                                 </a>
-                                <form action="{{ route('careers.destroy', $career) }}" method="POST" class="inline-block" onsubmit="return confirm('¿Estás seguro?');">
+                                <form action="{{ route('careers.destroy', $career) }}" method="POST" class="inline-block" data-confirm-delete>
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="inline-flex items-center px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-md hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors">

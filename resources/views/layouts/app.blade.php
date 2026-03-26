@@ -15,6 +15,9 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
 
+        <!-- SweetAlert2 -->
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
         <!-- Dark Mode Initialization (prevents flash of unstyled content) -->
         <script>
             (function() {
@@ -56,5 +59,71 @@
                 </main>
             </div>
         </div>
+
+        <!-- Global Alert Handler -->
+        <script>
+            // Get dark mode state
+            const isDarkModeCheck = () => document.documentElement.classList.contains('dark');
+
+            // SweetAlert2 configuration for dark mode
+            const getAlertConfig = () => ({
+                background: isDarkModeCheck() ? '#1f2937' : '#ffffff',
+                color: isDarkModeCheck() ? '#f3f4f6' : '#111827',
+            });
+
+            // Show success messages from session
+            @if (session('success'))
+                Swal.fire({
+                    ...getAlertConfig(),
+                    title: '¡Éxito!',
+                    text: '{{ session('success') }}',
+                    icon: 'success',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                });
+            @endif
+
+            // Show error messages from session
+            @if (session('error'))
+                Swal.fire({
+                    ...getAlertConfig(),
+                    title: 'Error',
+                    text: '{{ session('error') }}',
+                    icon: 'error',
+                    position: 'center',
+                    confirmButtonColor: '#ef4444',
+                });
+            @endif
+
+            // Intercept delete forms for confirmation
+            document.addEventListener('DOMContentLoaded', function () {
+                const deleteForms = document.querySelectorAll('form[data-confirm-delete]');
+                
+                deleteForms.forEach(form => {
+                    form.addEventListener('submit', function (e) {
+                        e.preventDefault();
+                        
+                        Swal.fire({
+                            ...getAlertConfig(),
+                            title: '¿Estás seguro?',
+                            text: 'Esta acción no se puede deshacer.',
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#ef4444',
+                            cancelButtonColor: '#6b7280',
+                            confirmButtonText: 'Sí, eliminar',
+                            cancelButtonText: 'Cancelar',
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                form.submit();
+                            }
+                        });
+                    });
+                });
+            });
+        </script>
     </body>
 </html>

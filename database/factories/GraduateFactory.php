@@ -19,6 +19,7 @@ class GraduateFactory extends Factory
     public function definition(): array
     {
         return [
+            'carnet' => 'G'.$this->faker->unique()->numberBetween(100000, 999999),
             'first_name' => $this->faker->firstName(),
             'last_name' => $this->faker->lastName(),
             'email' => $this->faker->unique()->safeEmail(),

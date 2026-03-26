@@ -2,28 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\GraduateNotification;
+use App\Exports\GraduatesExport;
+use App\Models\Career;
 use App\Models\Graduate;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ReportController extends Controller
 {
     /**
-     * Generate a PDF report of graduates with optional filters
+     * Show the reports page with filtering options
      */
-    public function downloadGraduatesPdf(Request $request): Response
+    public function index(Request $request): View
     {
-        $query = Graduate::query()
-            ->with('career')
-            ->orderBy('graduation_year', 'desc')
-            ->orderBy('last_name');
+        // Get careers for dropdown
+        $careers = Career::orderBy('name')->get();
 
-        // Apply filters
+        // Build query based on filters
+        $query = Graduate::query()->with('career');
+
         if ($request->filled('graduation_year')) {
             $query->where('graduation_year', $request->graduation_year);
         }
@@ -36,11 +36,56 @@ class ReportController extends Controller
             $query->where('gender', $request->gender);
         }
 
-        $graduates = $query->get();
+        // Order results
+        $graduates = $query
+            ->orderBy('graduation_year', 'desc')
+            ->orderBy('last_name')
+            ->get();
 
+        // Prepare filters for display
+        $filters = [
+            'graduation_year' => $request->graduation_year,
+            'career_id' => $request->career_id,
+            'gender' => $request->gender,
+        ];
+
+        return view('reports.index', [
+            'graduates' => $graduates,
+            'careers' => $careers,
+            'filters' => $filters,
+            'totalResults' => $graduates->count(),
+        ]);
+    }
+
+    /**
+     * Download PDF with current filters applied
+     */
+    public function downloadPdf(Request $request): Response
+    {
+        // Build query based on filters
+        $query = Graduate::query()->with('career');
+
+        if ($request->filled('graduation_year')) {
+            $query->where('graduation_year', $request->graduation_year);
+        }
+
+        if ($request->filled('career_id')) {
+            $query->where('career_id', $request->career_id);
+        }
+
+        if ($request->filled('gender')) {
+            $query->where('gender', $request->gender);
+        }
+
+        $graduates = $query
+            ->orderBy('graduation_year', 'desc')
+            ->orderBy('last_name')
+            ->get();
+
+        // Prepare filter descriptions for PDF
         $filters = [
             'year' => $request->graduation_year ?? 'Todos',
-            'career' => $request->career_id ? \App\Models\Career::find($request->career_id)?->name ?? 'N/A' : 'Todas',
+            'career' => $request->career_id ? Career::find($request->career_id)?->name ?? 'N/A' : 'Todas',
             'gender' => match ($request->gender) {
                 'male' => 'Masculino',
                 'female' => 'Femenino',
@@ -48,116 +93,30 @@ class ReportController extends Controller
             },
         ];
 
-        $pdf = Pdf::loadView('reports.graduates-pdf', [
+        $pdf = Pdf::loadView('reports.pdf', [
             'graduates' => $graduates,
             'filters' => $filters,
             'count' => $graduates->count(),
         ]);
 
-        return $pdf->download('reporte-graduados-' . now()->format('Y-m-d-His') . '.pdf');
+        return $pdf->download('reporte-graduados-'.now()->format('Y-m-d-His').'.pdf');
     }
 
     /**
-     * Show the email form for sending reports to graduates
+     * Export graduates to Excel with current filters applied
      */
-    public function emailForm(Request $request)
+    public function exportExcel(Request $request)
     {
-        $careers = \App\Models\Career::orderBy('name')->get();
+        $filters = [
+            'search' => $request->search,
+            'year' => $request->graduation_year,
+            'career_id' => $request->career_id,
+            'gender' => $request->gender,
+        ];
 
-        return view('reports.email-form', [
-            'careers' => $careers,
-            'filters' => [
-                'graduation_year' => $request->graduation_year,
-                'career_id' => $request->career_id,
-                'gender' => $request->gender,
-            ],
-        ]);
-    }
-
-    /**
-     * Get count of graduates matching filters
-     */
-    public function getGraduatesCount(Request $request): JsonResponse
-    {
-        $query = Graduate::query();
-
-        if ($request->filled('graduation_year')) {
-            $query->where('graduation_year', $request->graduation_year);
-        }
-
-        if ($request->filled('career_id')) {
-            $query->where('career_id', $request->career_id);
-        }
-
-        if ($request->filled('gender')) {
-            $query->where('gender', $request->gender);
-        }
-
-        return response()->json([
-            'count' => $query->count(),
-        ]);
-    }
-
-    /**
-     * Send email to filtered graduates
-     */
-    public function sendEmail(Request $request)
-    {
-        $validated = $request->validate([
-            'graduation_year' => 'nullable|integer|min:2000|max:2100',
-            'career_id' => 'nullable|exists:careers,id',
-            'gender' => 'nullable|in:male,female',
-            'subject' => 'required|string|max:255',
-            'message' => 'required|string|max:5000',
-        ]);
-
-        $query = Graduate::query();
-
-        if ($validated['graduation_year'] ?? null) {
-            $query->where('graduation_year', $validated['graduation_year']);
-        }
-
-        if ($validated['career_id'] ?? null) {
-            $query->where('career_id', $validated['career_id']);
-        }
-
-        if ($validated['gender'] ?? null) {
-            $query->where('gender', $validated['gender']);
-        }
-
-        $graduates = $query->get();
-
-        if ($graduates->isEmpty()) {
-            return redirect()->back()
-                ->with('error', 'No hay graduados que coincidan con los filtros especificados.');
-        }
-
-        // Send emails
-        $successCount = 0;
-        $failureCount = 0;
-
-        foreach ($graduates as $graduate) {
-            try {
-                Mail::to($graduate->email)->send(
-                    new GraduateNotification(
-                        $graduate,
-                        $validated['subject'],
-                        $validated['message'],
-                    )
-                );
-                $successCount++;
-            } catch (\Exception $e) {
-                Log::error("Failed to send email to {$graduate->email}: " . $e->getMessage());
-                $failureCount++;
-            }
-        }
-
-        $message = "Emails enviados exitosamente: {$successCount}";
-        if ($failureCount > 0) {
-            $message .= " (Fallos: {$failureCount})";
-        }
-
-        return redirect()->route('dashboard')
-            ->with('success', $message);
+        return Excel::download(
+            new GraduatesExport($filters),
+            'graduados-'.now()->format('Y-m-d-His').'.xlsx'
+        );
     }
 }

@@ -5,12 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Graduate extends Model
 {
     use HasFactory;
 
     protected $fillable = [
+        'carnet',
         'first_name',
         'last_name',
         'email',
@@ -31,6 +33,13 @@ class Graduate extends Model
     public function career(): BelongsTo
     {
         return $this->belongsTo(Career::class);
+    }
+
+    public function events(): BelongsToMany
+    {
+        return $this->belongsToMany(Event::class, 'event_graduate')
+            ->withPivot('attended_at')
+            ->withTimestamps();
     }
 
     public function getFullNameAttribute(): string

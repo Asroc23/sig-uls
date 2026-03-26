@@ -17,9 +17,37 @@ class GraduateController extends Controller
      */
     public function index(): View
     {
-        $graduates = Graduate::with('career')->paginate(10);
+        $query = Graduate::with('career');
 
-        return view('graduates.index', compact('graduates'));
+        // Search by name or carnet
+        if (request()->filled('search')) {
+            $search = "%{request('search')}%";
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'like', $search)
+                    ->orWhere('last_name', 'like', $search)
+                    ->orWhere('carnet', 'like', $search);
+            });
+        }
+
+        // Filter by graduation year
+        if (request()->filled('graduation_year')) {
+            $query->where('graduation_year', request('graduation_year'));
+        }
+
+        // Filter by career
+        if (request()->filled('career_id')) {
+            $query->where('career_id', request('career_id'));
+        }
+
+        // Filter by gender
+        if (request()->filled('gender')) {
+            $query->where('gender', request('gender'));
+        }
+
+        $graduates = $query->paginate(10)->withQueryString();
+        $careers = Career::all();
+
+        return view('graduates.index', compact('graduates', 'careers'));
     }
 
     /**

@@ -15,7 +15,7 @@
                 </svg>
                 Editar
             </a>
-            <form action="{{ route('graduates.destroy', $graduate) }}" method="POST" class="inline-block" onsubmit="return confirm('¿Estás seguro?');">
+            <form action="{{ route('graduates.destroy', $graduate) }}" method="POST" class="inline-block" data-confirm-delete>
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
